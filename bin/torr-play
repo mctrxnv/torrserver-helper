@@ -1,0 +1,16 @@
+#!/usr/bin/env bash
+if [ -z "$1" ]; then
+  echo "Usage: torr-play <hash>"
+  exit 1
+fi
+
+HASH="$1"
+m3u=$("$(dirname "$0")/torr" get_playlist "$HASH" 2>/dev/null | grep -m1 '^http')
+
+if [ -z "$m3u" ]; then
+  echo "No stream found for hash $HASH"
+  exit 1
+fi
+
+echo "Playing: $m3u"
+exec mpv "$m3u"

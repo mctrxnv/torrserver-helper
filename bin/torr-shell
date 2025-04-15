@@ -1,0 +1,8 @@
+#!/usr/bin/env bash
+echo "Torr interactive shell (type 'exit' to quit)"
+while true; do
+  echo -n "torr> "
+  read -r cmd || break
+  [ "$cmd" = "exit" ] && break
+  "$(dirname "$0")/torr" $cmd
+done
