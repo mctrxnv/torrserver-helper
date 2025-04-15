@@ -1,5 +1,8 @@
 {
-  description = "TorrServer Helper CLI";
+  description = ''
+    TorrServer Helper CLI
+    (adapted from here https://github.com/iforvard/TorrServer-client)
+  '';
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
