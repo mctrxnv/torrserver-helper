@@ -19,7 +19,24 @@
             system
             ;
         };
+
         pypkgs = pkgs.python312Packages;
+
+        rutracker-downloader = pkgs.python312Packages.buildPythonPackage {
+          pname = "rutracker-downloader";
+          version = "3.0.4";
+          src = pkgs.fetchPypi {
+            pname = "rutracker-downloader";
+            version = "3.0.4";
+            sha256 = "sha256-52Etli3SO6w28y29jTkF8W3oFaKChUUhMBu+aK2IuJc=";
+          };
+
+          doCheck = false;
+          propagatedBuildInputs = with pkgs.python312Packages; [
+            requests
+            beautifulsoup4
+          ];
+        };
       in
       {
         packages.default = pypkgs.buildPythonApplication {

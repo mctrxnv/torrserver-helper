@@ -69,16 +69,30 @@ class TorrentAPI(BaseAPI):
         json_data = {"action": "drop", "hash": torrent_hash}
         return self._post("torrents", json=json_data).text
 
-    def add_torrent(self, link, save_path=None):
-        """Add torrent or magnet by path."""
-        json_data = {"path": path}
-        if save_path:
-            json_data["save_path"] = save_path
+    def add_torrent(self, link, title="", poster="", save_to_db=True):
+      """Добавление magnet/url в TorrServer"""
+      json_data = {
+        "action": "add",
+        "url": link,
+        "title": title,
+        "save": save_to_db
+      }
+      if poster:
+        json_data["poster"] = poster
 
-        result = self._post("torrents", json=json_data)
-        if not result:
-            print("Failed to add torrent. Check if TorrServer is running and accessible.")
-        return result
+      print("→ POST /torrents", json_data)
+
+      response = self._post("torrents", json=json_data)
+      if not response.ok:
+        raise RuntimeError(f"Ошибка при добавлении торрента: {response.status_code} {response.text}")
+
+      # Сразу получим hash и вернём объект
+      added = response.json()
+      hash_ = added.get("hash") or added.get("Hash")  # fix for inconsistent casing
+      if not hash_:
+        return added
+
+      return self.get_torrent(hash_)
 
     def set_torrent(self, torrent_hash: str, title: str = None, poster: str = None) -> str:
         json_data = {
@@ -121,4 +135,3 @@ class Client(ServerAPI, SettingsAPI, PlaylistAPI, TorrentAPI):
                 # Log or handle the error as needed
                 continue
         return torrents
-
