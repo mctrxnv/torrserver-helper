@@ -114,12 +114,22 @@ def main():
       print(client.drop_torrent(args.hash))
 
     case "add_torrent":
-      result = client.add_torrent(
-        link=args.link,
-        title=args.title,
-        poster=args.poster,
-        save_to_db=not args.no_save
-      )
+      from pathlib import Path
+      if args.link.endswith(".torrent") and Path(args.link).is_file():
+        # перенаправим на upload_torrent
+        result = client.upload_torrent(
+          path=args.link,
+          title=args.title,
+          poster=args.poster,
+          save_to_db=not args.no_save
+        )
+      else:
+        result = client.add_torrent(
+          link=args.link,
+          title=args.title,
+          poster=args.poster,
+          save_to_db=not args.no_save
+        )
       print_result(result, json_out)
 
     case "get_torrent":

@@ -69,15 +69,16 @@ class TorrentAPI(BaseAPI):
         json_data = {"action": "drop", "hash": torrent_hash}
         return self._post("torrents", json=json_data).text
 
-    def add_torrent(self, link: str, title: str = "", poster: str = "", save_to_db: bool = True) -> dict:
-        json_data = {
-            "action": "add",
-            "link": link,
-            "title": title,
-            "poster": poster,
-            "save_to_db": save_to_db,
-        }
-        return self._post("torrents", json=json_data).json()
+    def add_torrent(self, path, save_path=None):
+        """Add torrent or magnet by path."""
+        json_data = {"path": path}
+        if save_path:
+            json_data["save_path"] = save_path
+
+        result = self._post("torrents", json=json_data)
+        if not result:
+            print("Failed to add torrent. Check if TorrServer is running and accessible.")
+        return result
 
     def set_torrent(self, torrent_hash: str, title: str = None, poster: str = None) -> str:
         json_data = {
