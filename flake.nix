@@ -21,49 +21,71 @@
         };
 
         pypkgs = pkgs.python312Packages;
-
-        rutracker-downloader = pkgs.python312Packages.buildPythonPackage {
-          pname = "rutracker-downloader";
-          version = "3.0.4";
-          src = pkgs.fetchPypi {
-            pname = "rutracker-downloader";
-            version = "3.0.4";
-            sha256 = "sha256-52Etli3SO6w28y29jTkF8W3oFaKChUUhMBu+aK2IuJc=";
-          };
-
-          doCheck = false;
-          propagatedBuildInputs = with pkgs.python312Packages; [
-            requests
-            beautifulsoup4
-          ];
-        };
       in
       {
-        packages.default = pypkgs.buildPythonApplication {
-          pname = "torrserver-helper";
-          version = "1.0.0";
-          format = "other"; # нет pyproject.toml
+        packages = {
+          default = pypkgs.buildPythonApplication {
+            pname = "torrserver-helper";
+            version = "1.0.0";
+            format = "other"; # нет pyproject.toml
 
-          src = ./.;
+            src = ./torrHelper;
 
-          propagatedBuildInputs = [ pypkgs.requests ];
+            propagatedBuildInputs = [ pypkgs.requests ];
 
-          installPhase = ''
-            mkdir   -p     $out/bin
-            cp             api.py                        $out/bin
+            installPhase = ''
+              mkdir   -p     $out/bin
+              cp             api.py                        $out/bin
 
-            # Уствнока скриптов
-            install -m755  helper.py                     $out/bin/torr
-            install -Dm755 bin/torr-shell                $out/bin/torr-shell
-            install -Dm755 bin/torr-play                 $out/bin/torr-play
+              # Уствнока скриптов
+              install -m755  helper.py                     $out/bin/torr
+              install -Dm755 bin/torr-shell                $out/bin/torr-shell
+              install -Dm755 bin/torr-play                 $out/bin/torr-play
 
-            # Установка автодополнений
-            install -Dm644 completions/torr.fish         $out/share/fish/vendor_completions.d/torr.fish
-            install -Dm644 completions/torr-shell.fish   $out/share/fish/vendor_completions.d/torr-shell.fish
-            install -Dm644 completions/torr-play.fish    $out/share/fish/vendor_completions.d/torr-play.fish
-          '';
+              # Установка автодополнений
+              install -Dm644 completions/torr.fish         $out/share/fish/vendor_completions.d/torr.fish
+              install -Dm644 completions/torr-shell.fish   $out/share/fish/vendor_completions.d/torr-shell.fish
+              install -Dm644 completions/torr-play.fish    $out/share/fish/vendor_completions.d/torr-play.fish
+            '';
 
-          meta.mainProgram = "torr";
+            meta.mainProgram = "torr";
+          };
+          torrMagnet =
+            let
+              pyEnv = pkgs.python3.withPackages (
+                ps: with ps; [
+                  requests
+                ]
+              );
+            in
+            pkgs.stdenv.mkDerivation rec {
+              pname = "torrMagnet";
+              version = "1.0";
+
+              src = ./torrMagnet;
+
+              buildInputs = [
+                pkgs.bash
+                pyEnv
+              ];
+
+              installPhase = ''
+                mkdir -p $out/bin $out/share/${pname}
+
+                # Install all files to share directory
+                cp api.py helper.py ruTrackDL.py cmd.sh $out/share/${pname}/
+
+                # Create main executable that references files in share directory
+                cat > $out/bin/torrMagnet <<EOF
+                #!${pkgs.runtimeShell}
+                output=/tmp/torrTmp
+                ${pyEnv}/bin/python $out/share/${pname}/ruTrackDL.py "\$1" -o \$output
+                ${pyEnv}/bin/python $out/share/${pname}/helper.py add_torrent "\$(<\$output)"
+                EOF
+
+                chmod +x $out/bin/torrMagnet
+              '';
+            };
         };
       }
     );
