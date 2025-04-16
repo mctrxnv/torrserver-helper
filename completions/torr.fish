@@ -24,7 +24,7 @@ complete -c torr -n '__fish_seen_subcommand_from add_torrent' -a '(__torr_comple
 
 # === remove/drop/get_torrent/get_playlist — показывать title вместо hash ===
 function __torr_title_to_hash
-    for row in (torr -j get_torrents 2>/dev/null | jq -r '.[] | "\(.title)\t\(.hash)"')
+    for row in (torr -j get_torrents 2>/dev/null | jq -r '.[] | "\(.hash)\t\(.title)"')
         echo $row
     end
 end
