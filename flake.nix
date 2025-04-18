@@ -73,7 +73,7 @@
                 mkdir -p $out/bin $out/share/${pname}
 
                 # Install all files to share directory
-                cp api.py helper.py ruTrackDL.py cmd.sh $out/share/${pname}/
+                cp api.py helper.py ruTrackDL.py $out/share/${pname}/
 
                 # Create main executable that references files in share directory
                 cat > $out/bin/torrMagnet <<EOF
